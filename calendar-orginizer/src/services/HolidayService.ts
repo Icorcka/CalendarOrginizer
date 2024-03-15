@@ -5,9 +5,9 @@ async function fetchAvailableCountries() {
   }
   
 async function fetchHolidaysForCountry(countryCode: string) {
-const response = await fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${countryCode}`);
-const holidays = await response.json();
-return holidays;
+    const response = await fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${countryCode}`);
+    const holidays = await response.json();
+    return holidays;
 }
 
 export async function fetchHolidaysForDateRange(startDate: Date, endDate: Date) {
@@ -26,18 +26,20 @@ export async function fetchHolidaysForDateRange(startDate: Date, endDate: Date) 
 
     allHolidays.forEach(holiday => {
         for (let year = startYear; year <= endYear; year++) {
-        const modifiedDate = new Date(holiday.date);
-        modifiedDate.setFullYear(year);
-        const key = modifiedDate.toISOString().split('T')[0];
+            const modifiedDate = new Date(holiday.date);
+            modifiedDate.setFullYear(year);
+            const key = modifiedDate.toISOString().split('T')[0];
 
-        if (!holidaysByDate[key]) {
-            holidaysByDate[key] = [];
-        }
-        if (holidaysByDate[key].length < 2) {
-            holidaysByDate[key].push({ ...holiday, date: modifiedDate });
-        }
+            if (!holidaysByDate[key]) {
+                holidaysByDate[key] = [];
+            }
+
+            if (holidaysByDate[key].length < 2 && !holidaysByDate[key].some(h => h.name === holiday.name)) {
+                holidaysByDate[key].push({ ...holiday, date: modifiedDate });
+            }
         }
     });
 
     return holidaysByDate;
 }
+  
