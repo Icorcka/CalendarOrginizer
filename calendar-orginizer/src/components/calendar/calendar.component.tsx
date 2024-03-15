@@ -3,6 +3,8 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, ge
 import { CalendarGrid, DaySquare, DayName, EventIndicator } from './calendar.styles';
 import { fetchHolidaysForDateRange } from '../../services/HolidayService';
 import EventModal from '../EventModal/event-modal.component';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+
 
 interface CalendarProps {
   currentDate: Date;
@@ -80,6 +82,38 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
     setEditingEvent(undefined);
   };
 
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+  
+    if (!destination) return;
+  
+    const sourceId = source.droppableId;
+    const destinationId = destination.droppableId;
+  
+    if (sourceId === destinationId) {
+      const newDayEvents = Array.from(events[sourceId]);
+      const [removed] = newDayEvents.splice(source.index, 1);
+      newDayEvents.splice(destination.index, 0, removed);
+  
+      setEvents(prevEvents => ({
+        ...prevEvents,
+        [sourceId]: newDayEvents
+      }));
+    } else {
+      const sourceEvents = Array.from(events[sourceId]);
+      const destEvents = Array.from(events[destinationId] || []);
+  
+      const [removed] = sourceEvents.splice(source.index, 1);
+      destEvents.splice(destination.index, 0, removed);
+  
+      setEvents(prevEvents => ({
+        ...prevEvents,
+        [sourceId]: sourceEvents,
+        [destinationId]: destEvents
+      }));
+    }
+  };
+
   return (
     <>
         <EventModal 
@@ -89,6 +123,7 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
             date={selectedDate}
             editingEvent={editingEvent}
       />
+      <DragDropContext onDragEnd={onDragEnd}>
         <CalendarGrid>
         {weekdayNames.map(name => (
             <DayName key={name}>{name}</DayName>
@@ -96,25 +131,43 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
         {dates.map(date => {
             const dateString = format(date, 'yyyy-MM-dd');
             return (
-                <DaySquare
-                key={dateString}
-                isCurrentMonth={getMonth(date) === getMonth(currentDate)}
-                onClick={() => handleDayClick(date)}
-                >
-                <span>{date.getDate()}</span>
-                {holidays[dateString] && holidays[dateString].map(holiday => (
-                    <div key={holiday.name}>{holiday.name}</div>
-                ))}
-                {events[dateString] && events[dateString].map((event, index) => (
-                <div key={index} onClick={(e) => handleEventClick(event, dateString, e)}>
-                    <EventIndicator color={event.color} />
-                    {event.name}
-                </div>
-                ))}
-                </DaySquare>
+                <Droppable key={dateString} droppableId={dateString}>
+                    {(provided) => (
+                        <DaySquare
+                        key={dateString}
+                        isCurrentMonth={getMonth(date) === getMonth(currentDate)}
+                        onClick={() => handleDayClick(date)}
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        >
+                        <span>{date.getDate()}</span>
+                        {holidays[dateString] && holidays[dateString].map(holiday => (
+                            <div key={holiday.name}>{holiday.name}</div>
+                        ))}
+                        {events[dateString] && events[dateString].map((event, index) => (
+                        <Draggable key={event.name} draggableId={event.name} index={index}>
+                            {(provided) => (
+                                <div
+                                    key={index}
+                                    onClick={(e) => handleEventClick(event, dateString, e)}
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                >
+                                    <EventIndicator color={event.color} />
+                                    {event.name}
+                                </div>
+                            )}
+                        </Draggable>
+                        ))}
+                        {provided.placeholder}
+                        </DaySquare>
+                    )}
+                </Droppable>
             );
         })}
         </CalendarGrid>
+    </DragDropContext>
     </>
   );
 };
