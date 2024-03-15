@@ -18,3 +18,11 @@ export const DaySquare = styled.div<{ isCurrentMonth: boolean }>`
   text-align: left;
   position: relative;
 `;
+
+export const EventIndicator = styled.span<{ color: string }>`
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: ${props => props.color};
+    margin-right: 5px;
+`;
