@@ -1,42 +1,37 @@
-import React, { useState } from 'react';
-import { addWeeks, addMonths, subWeeks, subMonths, format } from 'date-fns';
+import React from 'react';
+import { format } from 'date-fns';
 import { PanelWrapper, Button, DateDisplay } from './panel.styles';
 
-const Panel: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [increment, setIncrement] = useState<'week' | 'month'>('month');
+interface PanelProps {
+  currentDate: Date;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  onCurrent: () => void;
+  onViewWeek: () => void;
+  onViewMonth: () => void;
+  viewMode: 'week' | 'month';
+}
 
-  const handleIncrement = () => {
-    setCurrentDate(increment === 'month' ? addMonths(currentDate, 1) : addWeeks(currentDate, 1));
-  };
-
-  const handleDecrement = () => {
-    setCurrentDate(increment === 'month' ? subMonths(currentDate, 1) : subWeeks(currentDate, 1));
-  };
-
-  const handleCurrent = () => {
-    setCurrentDate(new Date());
-  };
-
-  const handleWeek = () => {
-    setIncrement('week');
-  };
-
-  const handleMonth = () => {
-    setIncrement('month');
-  };
-
+const Panel: React.FC<PanelProps> = ({
+  currentDate,
+  onIncrement,
+  onDecrement,
+  onCurrent,
+  onViewWeek,
+  onViewMonth,
+  viewMode
+}) => {
   return (
     <PanelWrapper>
       <div>
-        <Button onClick={handleCurrent}>Current</Button>
-        <Button onClick={handleDecrement}>{'<'}</Button>
-        <Button onClick={handleIncrement}>{'>'}</Button>
+        <Button onClick={onCurrent}>Current</Button>
+        <Button onClick={onDecrement}>{'<'}</Button>
+        <Button onClick={onIncrement}>{'>'}</Button>
       </div>
       <DateDisplay>{format(currentDate, 'MMMM yyyy')}</DateDisplay>
       <div>
-      <Button onClick={handleWeek} isGray={increment === 'month'}>Week</Button>
-        <Button onClick={handleMonth} isGray={increment === 'week'}>Month</Button>
+        <Button onClick={onViewWeek} isGray={viewMode === 'month'}>Week</Button>
+        <Button onClick={onViewMonth} isGray={viewMode === 'week'}>Month</Button>
       </div>
     </PanelWrapper>
   );
