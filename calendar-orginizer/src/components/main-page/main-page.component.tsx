@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Panel from '../panel/panel.component';
 import { MainPageWrapper } from './main-page.styles';
 import Calendar from '../calendar/calendar.component';
-import { addWeeks, subWeeks, addMonths, subMonths, setDate } from 'date-fns';
+import { addWeeks, subWeeks, addMonths, subMonths } from 'date-fns';
 
 const MainPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
