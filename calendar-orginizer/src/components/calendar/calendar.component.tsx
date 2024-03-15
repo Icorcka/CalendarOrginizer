@@ -18,6 +18,7 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [editingEvent, setEditingEvent] = useState<{ name: string; color: string; date?: string } | undefined>();
+    const [eventFilter, setEventFilter] = useState('');
 
     const getDates = () => {
     let start, end;
@@ -123,6 +124,12 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
             date={selectedDate}
             editingEvent={editingEvent}
       />
+    <input 
+        type="text" 
+        placeholder="Filter events" 
+        value={eventFilter} 
+        onChange={(e) => setEventFilter(e.target.value)}
+    />
       <DragDropContext onDragEnd={onDragEnd}>
         <CalendarGrid>
         {weekdayNames.map(name => (
@@ -144,7 +151,9 @@ const Calendar: React.FC<CalendarProps> = ({ currentDate, viewMode, onDateClick 
                         {holidays[dateString] && holidays[dateString].map(holiday => (
                             <div key={holiday.name}>{holiday.name}</div>
                         ))}
-                        {events[dateString] && events[dateString].map((event, index) => (
+                        {events[dateString] && events[dateString]
+                            .filter(event => event.name.toLowerCase().includes(eventFilter.toLowerCase()))
+                            .map((event, index) => (
                         <Draggable key={event.name} draggableId={event.name} index={index}>
                             {(provided) => (
                                 <div
